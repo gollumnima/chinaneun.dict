@@ -3,16 +3,28 @@ import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { WordCard } from "@/components/WordCard";
 import { AddWordForm } from "@/components/AddWordForm";
-import { useWords } from "@/hooks/useWords";
+import { useWords, useItalianWords } from "@/hooks/useWords";
 import { BookOpen, Plus, Search } from "lucide-react";
 
+type Language = "chinese" | "italian";
+
 const Index = () => {
-  const { addWord, deleteWord, searchWords, categoryCounts } = useWords();
+  const [language, setLanguage] = useState<Language>("chinese");
+  const chinese = useWords();
+  const italian = useItalianWords();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("전체");
   const [showAdd, setShowAdd] = useState(false);
 
-  const results = searchWords(query, category);
+  const active = language === "chinese" ? chinese : italian;
+  const results = active.searchWords(query, category);
+
+  const handleLanguageChange = (lang: Language) => {
+    setLanguage(lang);
+    setQuery("");
+    setCategory("전체");
+    setShowAdd(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -24,17 +36,40 @@ const Index = () => {
               <BookOpen className="h-5 w-5 text-primary-foreground" />
             </div>
             <h1 className="text-xl font-bold text-foreground tracking-tight">
-              中文学习
+              차이나는 사전
             </h1>
           </div>
-          <button
-            onClick={() => setShowAdd(!showAdd)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
-              ${showAdd ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
-          >
-            <Plus className={`h-4 w-4 transition-transform ${showAdd ? "rotate-45" : ""}`} />
-            단어 추가
-          </button>
+
+          <div className="flex items-center gap-3">
+            {/* Language Toggle */}
+            <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
+              <button
+                onClick={() => handleLanguageChange("chinese")}
+                title="중국어"
+                className={`text-xl px-2.5 py-1 rounded-md transition-all duration-200
+                  ${language === "chinese" ? "bg-background shadow-sm scale-105" : "opacity-50 hover:opacity-80"}`}
+              >
+                🇨🇳
+              </button>
+              <button
+                onClick={() => handleLanguageChange("italian")}
+                title="이탈리아어"
+                className={`text-xl px-2.5 py-1 rounded-md transition-all duration-200
+                  ${language === "italian" ? "bg-background shadow-sm scale-105" : "opacity-50 hover:opacity-80"}`}
+              >
+                🇮🇹
+              </button>
+            </div>
+
+            <button
+              onClick={() => setShowAdd(!showAdd)}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+                ${showAdd ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
+            >
+              <Plus className={`h-4 w-4 transition-transform ${showAdd ? "rotate-45" : ""}`} />
+              단어 추가
+            </button>
+          </div>
         </div>
       </header>
 
@@ -42,14 +77,17 @@ const Index = () => {
         {/* Add Word Form */}
         {showAdd && (
           <div className="animate-fade-in">
-            <AddWordForm onAdd={addWord} />
+            {language === "chinese"
+              ? <AddWordForm language="chinese" onAdd={chinese.addWord} />
+              : <AddWordForm language="italian" onAdd={italian.addWord} />
+            }
           </div>
         )}
 
         {/* Search & Filter */}
         <div className="space-y-4">
           <SearchBar value={query} onChange={setQuery} />
-          <CategoryFilter selected={category} onSelect={setCategory} counts={categoryCounts} />
+          <CategoryFilter selected={category} onSelect={setCategory} counts={active.categoryCounts} />
         </div>
 
         {/* Results count */}
@@ -61,9 +99,14 @@ const Index = () => {
         {/* Word Grid */}
         {results.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {results.map((word, i) => (
-              <WordCard key={word.id} word={word} index={i} onDelete={deleteWord} />
-            ))}
+            {language === "chinese"
+              ? chinese.searchWords(query, category).map((word, i) => (
+                  <WordCard key={word.id} word={word} language="chinese" index={i} onDelete={chinese.deleteWord} />
+                ))
+              : italian.searchWords(query, category).map((word, i) => (
+                  <WordCard key={word.id} word={word} language="italian" index={i} onDelete={italian.deleteWord} />
+                ))
+            }
           </div>
         ) : (
           <div className="text-center py-16 space-y-3">

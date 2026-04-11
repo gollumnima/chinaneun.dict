@@ -1,14 +1,18 @@
-import { ChineseWord } from "@/data/words";
+import { ChineseWord, ItalianWord } from "@/data/words";
 import { Badge } from "@/components/ui/badge";
 import { Trash2 } from "lucide-react";
 
-interface WordCardProps {
-  word: ChineseWord;
-  index: number;
-  onDelete?: (id: string) => void;
-}
+type WordCardProps =
+  | { word: ChineseWord; language: "chinese"; index: number; onDelete?: (id: string) => void }
+  | { word: ItalianWord; language: "italian"; index: number; onDelete?: (id: string) => void };
 
-export function WordCard({ word, index, onDelete }: WordCardProps) {
+export function WordCard(props: WordCardProps) {
+  const { word, language, index, onDelete } = props;
+
+  const primary = language === "chinese" ? word.chinese : word.italian;
+  const pronunciation = language === "chinese" ? word.pinyin : word.pronunciation;
+  const examplePronunciation = language === "chinese" ? word.examplePinyin : word.examplePronunciation;
+
   return (
     <div
       className="glass-card rounded-lg p-5 hover:shadow-md transition-all duration-200 group animate-fade-in"
@@ -17,14 +21,14 @@ export function WordCard({ word, index, onDelete }: WordCardProps) {
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <span className="text-3xl font-chinese font-semibold text-foreground">
-              {word.chinese}
+            <span className={`text-3xl font-semibold text-foreground ${language === "chinese" ? "font-chinese" : ""}`}>
+              {primary}
             </span>
             <Badge variant="secondary" className="text-xs">
               {word.category}
             </Badge>
           </div>
-          <p className="text-sm text-primary font-medium">{word.pinyin}</p>
+          <p className="text-sm text-primary font-medium">{pronunciation}</p>
           <p className="text-base text-muted-foreground">{word.korean}</p>
         </div>
         {onDelete && (
@@ -39,8 +43,8 @@ export function WordCard({ word, index, onDelete }: WordCardProps) {
 
       {word.example && (
         <div className="mt-4 pt-3 border-t border-border/50 space-y-0.5">
-          <p className="text-sm font-chinese text-foreground/80">{word.example}</p>
-          <p className="text-xs text-primary/70">{word.examplePinyin}</p>
+          <p className={`text-sm text-foreground/80 ${language === "chinese" ? "font-chinese" : ""}`}>{word.example}</p>
+          <p className="text-xs text-primary/70">{examplePronunciation}</p>
           <p className="text-xs text-muted-foreground">{word.exampleKorean}</p>
         </div>
       )}
