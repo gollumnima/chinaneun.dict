@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SearchBar } from "@/components/SearchBar";
 import { CategoryFilter } from "@/components/CategoryFilter";
 import { WordCard } from "@/components/WordCard";
@@ -18,6 +18,15 @@ const Index = () => {
 
   const active = language === "chinese" ? chinese : italian;
   const results = active.searchWords(query, category);
+
+  const suggestions = useMemo(() => {
+    if (!query.trim()) return [];
+    return results.slice(0, 6).map((w) =>
+      language === "chinese"
+        ? { id: w.id, primary: "chinese" in w ? w.chinese : "", sub: w.korean }
+        : { id: w.id, primary: "italian" in w ? w.italian : "", sub: w.korean }
+    );
+  }, [results, query, language]);
 
   const handleLanguageChange = (lang: Language) => {
     setLanguage(lang);
@@ -86,7 +95,13 @@ const Index = () => {
 
         {/* Search & Filter */}
         <div className="space-y-4">
-          <SearchBar value={query} onChange={setQuery} />
+          <SearchBar
+            value={query}
+            onChange={setQuery}
+            language={language}
+            suggestions={suggestions}
+            onSelectSuggestion={setQuery}
+          />
           <CategoryFilter selected={category} onSelect={setCategory} counts={active.categoryCounts} />
         </div>
 
