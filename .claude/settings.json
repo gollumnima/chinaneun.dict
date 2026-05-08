@@ -17,7 +17,10 @@
       "Read(//usr/local/bin/**)",
       "Read(//usr/local/**)",
       "Bash(curl -fsSL https://bun.sh/install)",
-      "Bash(bash)"
+      "Bash(bash)",
+      "Bash(npm info *)",
+      "Bash(python3 -c \"import json,sys; v=json.load\\(sys.stdin\\); print\\([x for x in v if x.startswith\\('8.'\\)][-5:]\\)\")",
+      "Bash(~/.bun/bin/bun add *)"
     ],
     "additionalDirectories": [
       "/Users/dooreplay/projects/chinaneun.dict"
