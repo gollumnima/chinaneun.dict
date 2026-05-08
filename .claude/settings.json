@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rm /Users/dooreplay/projects/chinaneun.dict/package-lock.json)",
+      "Bash(bun install *)",
+      "Bash(which bun *)",
+      "Read(//Users/dooreplay/.bun/bin/**)",
+      "Bash(~/.bun/bin/bun install *)",
+      "Bash(/opt/homebrew/bin/bun install *)",
+      "Bash(npx -y bun install)"
+    ],
+    "additionalDirectories": [
+      "/Users/dooreplay/projects/chinaneun.dict"
+    ]
+  }
+}
