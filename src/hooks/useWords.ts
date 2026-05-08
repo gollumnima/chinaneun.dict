@@ -1,29 +1,12 @@
-import { useState, useCallback, useMemo } from "react";
-import { ChineseWord, initialWords, ItalianWord, initialItalianWords } from "@/data/words";
+import { useCallback, useMemo } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { ChineseWord, ItalianWord } from "@/data/words";
 
-const STORAGE_KEY = "chinese-words";
-
-function loadWords(): ChineseWord[] {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return initialWords;
-}
-
-function saveWords(words: ChineseWord[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(words));
-  } catch (e) {
-    console.error("단어 저장 실패:", e);
-  }
-}
-
-// Normalize pinyin: remove tones/diacritics, lowercase, remove spaces
 function normalizePinyin(str: string): string {
   return str
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[̀-ͯ]/g, "")
     .replace(/\s+/g, "")
     .toLowerCase();
 }
@@ -32,38 +15,88 @@ function normalizeSearch(str: string): string {
   return str.replace(/\s+/g, "").toLowerCase();
 }
 
+type ChineseRow = {
+  id: string;
+  chinese: string;
+  pinyin: string;
+  korean: string;
+  category: string;
+  example: string | null;
+  example_pinyin: string | null;
+  example_korean: string | null;
+};
+
+function toChineseWord(row: ChineseRow): ChineseWord {
+  return {
+    id: row.id,
+    chinese: row.chinese,
+    pinyin: row.pinyin,
+    korean: row.korean,
+    category: row.category,
+    example: row.example ?? undefined,
+    examplePinyin: row.example_pinyin ?? undefined,
+    exampleKorean: row.example_korean ?? undefined,
+  };
+}
+
 export function useWords() {
-  const [words, setWords] = useState<ChineseWord[]>(loadWords);
+  const queryClient = useQueryClient();
 
-  const addWord = useCallback((word: Omit<ChineseWord, "id">) => {
-    setWords((prev) => {
-      const next = [...prev, { ...word, id: crypto.randomUUID() }];
-      saveWords(next);
-      return next;
-    });
-  }, []);
+  const { data: words = [] } = useQuery({
+    queryKey: ["chinese-words"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("chinese_words")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data as ChineseRow[]).map(toChineseWord);
+    },
+  });
 
-  const deleteWord = useCallback((id: string) => {
-    setWords((prev) => {
-      const next = prev.filter((w) => w.id !== id);
-      saveWords(next);
-      return next;
-    });
-  }, []);
+  const addMutation = useMutation({
+    mutationFn: async (word: Omit<ChineseWord, "id">) => {
+      const { error } = await supabase.from("chinese_words").insert([{
+        chinese: word.chinese,
+        pinyin: word.pinyin,
+        korean: word.korean,
+        category: word.category,
+        example: word.example ?? null,
+        example_pinyin: word.examplePinyin ?? null,
+        example_korean: word.exampleKorean ?? null,
+      }]);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["chinese-words"] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("chinese_words").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["chinese-words"] }),
+  });
+
+  const addWord = useCallback(
+    (word: Omit<ChineseWord, "id">) => addMutation.mutate(word),
+    [addMutation]
+  );
+
+  const deleteWord = useCallback(
+    (id: string) => deleteMutation.mutate(id),
+    [deleteMutation]
+  );
 
   const searchWords = useCallback(
     (query: string, category?: string) => {
       let results = words;
-
       if (category && category !== "전체") {
         results = results.filter((w) => w.category === category);
       }
-
       if (!query.trim()) return results;
-
       const q = normalizeSearch(query);
       const qPinyin = normalizePinyin(query);
-
       return results.filter(
         (w) =>
           w.chinese.includes(q) ||
@@ -75,7 +108,7 @@ export function useWords() {
   );
 
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { "전체": words.length };
+    const counts: Record<string, number> = { 전체: words.length };
     words.forEach((w) => {
       counts[w.category] = (counts[w.category] || 0) + 1;
     });
@@ -85,55 +118,87 @@ export function useWords() {
   return { words, addWord, deleteWord, searchWords, categoryCounts };
 }
 
-const ITALIAN_STORAGE_KEY = "italian-words";
+type ItalianRow = {
+  id: string;
+  italian: string;
+  pronunciation: string;
+  korean: string;
+  category: string;
+  example: string | null;
+  example_pronunciation: string | null;
+  example_korean: string | null;
+};
 
-function loadItalianWords(): ItalianWord[] {
-  try {
-    const stored = localStorage.getItem(ITALIAN_STORAGE_KEY);
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return initialItalianWords;
-}
-
-function saveItalianWords(words: ItalianWord[]) {
-  try {
-    localStorage.setItem(ITALIAN_STORAGE_KEY, JSON.stringify(words));
-  } catch (e) {
-    console.error("이탈리아어 단어 저장 실패:", e);
-  }
+function toItalianWord(row: ItalianRow): ItalianWord {
+  return {
+    id: row.id,
+    italian: row.italian,
+    pronunciation: row.pronunciation,
+    korean: row.korean,
+    category: row.category,
+    example: row.example ?? undefined,
+    examplePronunciation: row.example_pronunciation ?? undefined,
+    exampleKorean: row.example_korean ?? undefined,
+  };
 }
 
 export function useItalianWords() {
-  const [words, setWords] = useState<ItalianWord[]>(loadItalianWords);
+  const queryClient = useQueryClient();
 
-  const addWord = useCallback((word: Omit<ItalianWord, "id">) => {
-    setWords((prev) => {
-      const next = [...prev, { ...word, id: crypto.randomUUID() }];
-      saveItalianWords(next);
-      return next;
-    });
-  }, []);
+  const { data: words = [] } = useQuery({
+    queryKey: ["italian-words"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("italian_words")
+        .select("*")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      return (data as ItalianRow[]).map(toItalianWord);
+    },
+  });
 
-  const deleteWord = useCallback((id: string) => {
-    setWords((prev) => {
-      const next = prev.filter((w) => w.id !== id);
-      saveItalianWords(next);
-      return next;
-    });
-  }, []);
+  const addMutation = useMutation({
+    mutationFn: async (word: Omit<ItalianWord, "id">) => {
+      const { error } = await supabase.from("italian_words").insert([{
+        italian: word.italian,
+        pronunciation: word.pronunciation,
+        korean: word.korean,
+        category: word.category,
+        example: word.example ?? null,
+        example_pronunciation: word.examplePronunciation ?? null,
+        example_korean: word.exampleKorean ?? null,
+      }]);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["italian-words"] }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("italian_words").delete().eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["italian-words"] }),
+  });
+
+  const addWord = useCallback(
+    (word: Omit<ItalianWord, "id">) => addMutation.mutate(word),
+    [addMutation]
+  );
+
+  const deleteWord = useCallback(
+    (id: string) => deleteMutation.mutate(id),
+    [deleteMutation]
+  );
 
   const searchWords = useCallback(
     (query: string, category?: string) => {
       let results = words;
-
       if (category && category !== "전체") {
         results = results.filter((w) => w.category === category);
       }
-
       if (!query.trim()) return results;
-
       const q = query.replace(/\s+/g, "").toLowerCase();
-
       return results.filter(
         (w) =>
           w.italian.toLowerCase().includes(q) ||
@@ -145,7 +210,7 @@ export function useItalianWords() {
   );
 
   const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = { "전체": words.length };
+    const counts: Record<string, number> = { 전체: words.length };
     words.forEach((w) => {
       counts[w.category] = (counts[w.category] || 0) + 1;
     });

@@ -7,7 +7,17 @@
       "Read(//Users/dooreplay/.bun/bin/**)",
       "Bash(~/.bun/bin/bun install *)",
       "Bash(/opt/homebrew/bin/bun install *)",
-      "Bash(npx -y bun install)"
+      "Bash(npx -y bun install)",
+      "Bash(bun add *)",
+      "Read(//opt/homebrew/bin/**)",
+      "Bash(find /Users/dooreplay -name \"bun\" -type f 2>/dev/null | head -5)",
+      "Read(//Users/dooreplay/**)",
+      "Bash(~/.asdf/shims/bun --version)",
+      "Bash(/Users/dooreplay/.asdf/shims/bun --version)",
+      "Read(//usr/local/bin/**)",
+      "Read(//usr/local/**)",
+      "Bash(curl -fsSL https://bun.sh/install)",
+      "Bash(bash)"
     ],
     "additionalDirectories": [
       "/Users/dooreplay/projects/chinaneun.dict"

@@ -9,7 +9,7 @@
 - **카테고리 필터** — 인사, 일상, 음식, 교통, 쇼핑, 감정, 숫자, 시간, 장소, 기타
 - **단어 추가** — 원어, 발음, 한국어 뜻, 카테고리, 예문(선택)을 입력해 등록
 - **단어 삭제** — 카드에 마우스를 올리면 삭제 버튼 노출
-- **데이터 유지** — 브라우저 localStorage에 자동 저장 (언어별 독립 저장)
+- **데이터 유지** — Supabase DB에 저장
 
 ## 기술 스택
 
@@ -19,23 +19,25 @@
 | 빌드 도구 | Vite |
 | 스타일링 | Tailwind CSS |
 | UI 컴포넌트 | shadcn/ui (Radix UI) |
-| 상태 관리 | React hooks (useState, useMemo, useCallback) |
+| 상태 관리 | TanStack Query + React hooks |
+| DB | Supabase |
+| 배포 | Cloudflare Pages |
 | 테스트 | Vitest + Testing Library |
 
 ## 시작하기
 
 ```bash
 # 의존성 설치
-npm install
+bun install
 
 # 개발 서버 실행
-npm run dev
+bun dev
 
 # 빌드
-npm run build
+bun run build
 
 # 테스트
-npm test
+bun test
 ```
 
 ## 프로젝트 구조
