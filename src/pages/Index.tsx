@@ -36,26 +36,25 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" data-lang={language}>
       {/* Header */}
       <header className="border-b border-border/60 bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="container max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-lg bg-primary flex items-center justify-center">
-              <BookOpen className="h-5 w-5 text-primary-foreground" />
+        <div className="container max-w-5xl mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg bg-primary flex items-center justify-center shrink-0">
+              <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 text-primary-foreground" />
             </div>
-            <h1 className="text-xl font-bold text-foreground tracking-tight">
+            <h1 className="text-base sm:text-xl font-bold text-foreground tracking-tight whitespace-nowrap">
               차이나는 사전
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Language Toggle */}
+          <div className="flex items-center gap-2">
             <div className="flex items-center gap-1 bg-secondary rounded-lg p-1">
               <button
                 onClick={() => handleLanguageChange("chinese")}
                 title="중국어"
-                className={`text-xl px-2.5 py-1 rounded-md transition-all duration-200
+                className={`text-lg sm:text-xl px-2 sm:px-2.5 py-1 rounded-md transition-all duration-200
                   ${language === "chinese" ? "bg-background shadow-sm scale-105" : "opacity-50 hover:opacity-80"}`}
               >
                 🇨🇳
@@ -63,7 +62,7 @@ const Index = () => {
               <button
                 onClick={() => handleLanguageChange("italian")}
                 title="이탈리아어"
-                className={`text-xl px-2.5 py-1 rounded-md transition-all duration-200
+                className={`text-lg sm:text-xl px-2 sm:px-2.5 py-1 rounded-md transition-all duration-200
                   ${language === "italian" ? "bg-background shadow-sm scale-105" : "opacity-50 hover:opacity-80"}`}
               >
                 🇮🇹
@@ -72,11 +71,11 @@ const Index = () => {
 
             <button
               onClick={() => setShowAdd(!showAdd)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all
+              className={`flex items-center gap-1.5 px-2.5 sm:px-4 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap
                 ${showAdd ? "bg-secondary text-secondary-foreground" : "bg-primary text-primary-foreground hover:bg-primary/90"}`}
             >
-              <Plus className={`h-4 w-4 transition-transform ${showAdd ? "rotate-45" : ""}`} />
-              단어 추가
+              <Plus className={`h-4 w-4 transition-transform shrink-0 ${showAdd ? "rotate-45" : ""}`} />
+              <span className="hidden sm:inline">단어 추가</span>
             </button>
           </div>
         </div>

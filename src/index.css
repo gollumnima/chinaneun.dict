@@ -97,6 +97,13 @@
   }
 }
 
+@layer base {
+  [data-lang="italian"] {
+    --primary: 150 60% 38%;
+    --ring: 150 60% 38%;
+  }
+}
+
 @layer utilities {
   .glass-card {
     @apply bg-card/80 backdrop-blur-sm border border-border/50 shadow-sm;
