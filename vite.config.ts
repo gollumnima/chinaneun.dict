@@ -3,7 +3,11 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 import { componentTagger } from "lovable-tagger";
 
-// https://vitejs.dev/config/
+const plugins: PluginOption[] = [react()];
+if (process.env.NODE_ENV === "development") {
+  plugins.push(componentTagger());
+}
+
 export default defineConfig({
   server: {
     host: "::",
@@ -12,10 +16,7 @@ export default defineConfig({
       overlay: false,
     },
   },
-  plugins: [
-    react(),
-    process.env.NODE_ENV === "development" && componentTagger(),
-  ].filter(Boolean) as PluginOption[],
+  plugins,
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
