@@ -1,5 +1,6 @@
 import { useCallback, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { ChineseWord, ItalianWord } from "@/data/words";
 
@@ -78,6 +79,26 @@ export function useWords() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["chinese-words"] }),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async (word: ChineseWord) => {
+      const { data, error } = await supabase.from("chinese_words").update({
+        chinese: word.chinese,
+        pinyin: word.pinyin,
+        korean: word.korean,
+        category: word.category,
+        example: word.example ?? null,
+        example_pinyin: word.examplePinyin ?? null,
+        example_korean: word.exampleKorean ?? null,
+      }).eq("id", word.id).select();
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error("수정 권한이 없습니다. Supabase RLS 정책을 확인해주세요.");
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["chinese-words"] }),
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
   const addWord = useCallback(
     (word: Omit<ChineseWord, "id">) => addMutation.mutate(word),
     [addMutation]
@@ -86,6 +107,11 @@ export function useWords() {
   const deleteWord = useCallback(
     (id: string) => deleteMutation.mutate(id),
     [deleteMutation]
+  );
+
+  const updateWord = useCallback(
+    (word: ChineseWord) => updateMutation.mutate(word),
+    [updateMutation]
   );
 
   const searchWords = useCallback(
@@ -115,7 +141,7 @@ export function useWords() {
     return counts;
   }, [words]);
 
-  return { words, addWord, deleteWord, searchWords, categoryCounts };
+  return { words, addWord, deleteWord, updateWord, searchWords, categoryCounts };
 }
 
 type ItalianRow = {
@@ -181,6 +207,26 @@ export function useItalianWords() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["italian-words"] }),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: async (word: ItalianWord) => {
+      const { data, error } = await supabase.from("italian_words").update({
+        italian: word.italian,
+        pronunciation: word.pronunciation,
+        korean: word.korean,
+        category: word.category,
+        example: word.example ?? null,
+        example_pronunciation: word.examplePronunciation ?? null,
+        example_korean: word.exampleKorean ?? null,
+      }).eq("id", word.id).select();
+      if (error) throw error;
+      if (!data || data.length === 0) throw new Error("수정 권한이 없습니다. Supabase RLS 정책을 확인해주세요.");
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["italian-words"] }),
+    onError: (error: Error) => {
+      toast.error(error.message);
+    },
+  });
+
   const addWord = useCallback(
     (word: Omit<ItalianWord, "id">) => addMutation.mutate(word),
     [addMutation]
@@ -189,6 +235,11 @@ export function useItalianWords() {
   const deleteWord = useCallback(
     (id: string) => deleteMutation.mutate(id),
     [deleteMutation]
+  );
+
+  const updateWord = useCallback(
+    (word: ItalianWord) => updateMutation.mutate(word),
+    [updateMutation]
   );
 
   const searchWords = useCallback(
@@ -217,5 +268,5 @@ export function useItalianWords() {
     return counts;
   }, [words]);
 
-  return { words, addWord, deleteWord, searchWords, categoryCounts };
+  return { words, addWord, deleteWord, updateWord, searchWords, categoryCounts };
 }

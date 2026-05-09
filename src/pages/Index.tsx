@@ -115,10 +115,10 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {language === "chinese"
               ? chinese.searchWords(query, category).map((word, i) => (
-                  <WordCard key={word.id} word={word} language="chinese" index={i} onDelete={chinese.deleteWord} />
+                  <WordCard key={word.id} word={word} language="chinese" index={i} onDelete={chinese.deleteWord} onEdit={chinese.updateWord} />
                 ))
               : italian.searchWords(query, category).map((word, i) => (
-                  <WordCard key={word.id} word={word} language="italian" index={i} onDelete={italian.deleteWord} />
+                  <WordCard key={word.id} word={word} language="italian" index={i} onDelete={italian.deleteWord} onEdit={italian.updateWord} />
                 ))
             }
           </div>
