@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 export type Suggestion = {
@@ -43,8 +43,17 @@ export function SearchBar({ value, onChange, language, suggestions = [], onSelec
         onFocus={() => setFocused(true)}
         onBlur={() => setTimeout(() => setFocused(false), 150)}
         placeholder={PLACEHOLDER[language]}
-        className="pl-10 h-11 bg-card border-border/60 focus-visible:ring-primary/30"
+        className="pl-10 pr-9 h-11 bg-card border-border/60 focus-visible:ring-primary/30"
       />
+      {value.length > 0 && (
+        <button
+          onMouseDown={(e) => { e.preventDefault(); onChange(""); inputRef.current?.focus(); }}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="검색어 지우기"
+        >
+          <X className="h-4 w-4" />
+        </button>
+      )}
       {showDropdown && (
         <ul className="absolute z-50 top-full mt-1 w-full bg-card border border-border/60 rounded-lg shadow-md overflow-hidden">
           {suggestions.map((s) => (
